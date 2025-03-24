@@ -1,0 +1,67 @@
+{
+"company": {
+	"employees": {
+		"employee": [
+			{
+			"name": "John Doe",
+			"position": "Software Engineer",
+			"salary": "75000"
+			},
+			{
+			"name": "Jane Smith",
+			"position": "Project Manager",
+			"salary": "90000"
+			},
+			{
+			"name": "Michael Johnson",
+			"position": "Data Scientist",
+			"salary": "85000"
+			}
+		]
+		},
+	"departments": {
+		"department": [
+			{
+			"name": "Engineering",
+			"head": "John Doe"
+			},
+			{
+			"name": "Product Management",
+			"head": "Jane Smith"
+			},
+			{
+			"name": "Data Analytics",
+			"head": "Michael Johnson"
+			}
+		]
+		},
+	"projects": {
+		"project": [
+			{
+			"name": "AI Research",
+			"budget": "500000",
+			"team": {
+				"member": [
+					{
+"John Doe",
+					{
+"Michael Johnson"
+				]
+				}
+			},
+			{
+			"name": "Product Revamp",
+			"budget": "300000",
+			"team": {
+				"member": [
+					{
+"Jane Smith",
+					{
+"John Doe"
+				]
+				}
+			}
+		]
+		}
+	}
+}

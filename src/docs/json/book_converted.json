@@ -1,0 +1,54 @@
+{
+"library": {
+	"book": [
+		{
+		"title": "Война и мир",
+		"author": "Лев Толстой",
+		"genre": "Роман",
+		"year": "1869",
+		"price": "500",
+		"available": "true"
+		},
+		{
+		"title": "Преступление и наказание",
+		"author": "Фёдор Достоевский",
+		"genre": "Роман",
+		"year": "1866",
+		"price": "450",
+		"available": "false"
+		},
+		{
+		"title": "Мастер и Маргарита",
+		"author": "Михаил Булгаков",
+		"genre": "Фантастика",
+		"year": "1967",
+		"price": "550",
+		"available": "true"
+		},
+		{
+		"title": "1984",
+		"author": "Джордж Оруэлл",
+		"genre": "Антиутопия",
+		"year": "1949",
+		"price": "15",
+		"available": "true"
+		},
+		{
+		"title": "Гарри Поттер и философский камень",
+		"author": "Дж. К. Роулинг",
+		"genre": "Фэнтези",
+		"year": "1997",
+		"price": "20",
+		"available": "true"
+		},
+		{
+		"title": "Алиса в Стране чудес",
+		"author": "Льюис Кэрролл",
+		"genre": "Сказка",
+		"year": "1865",
+		"price": "12",
+		"available": "false"
+		}
+	]
+	}
+}

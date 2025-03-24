@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+    <book id="1">
+        <title>Война и мир</title>
+        <author>Лев Толстой</author>
+        <genre>Роман</genre>
+        <year>1869</year>
+        <price currency="RUB">500</price>
+        <available>true</available>
+    </book>
+    
+    <book id="2">
+        <title>Преступление и наказание</title>
+        <author>Фёдор Достоевский</author>
+        <genre>Роман</genre>
+        <year>1866</year>
+        <price currency="RUB">450</price>
+        <available>false</available>
+    </book>
+
+    <book id="3">
+        <title>Мастер и Маргарита</title>
+        <author>Михаил Булгаков</author>
+        <genre>Фантастика</genre>
+        <year>1967</year>
+        <price currency="RUB">550</price>
+        <available>true</available>
+    </book>
+
+    <book id="4">
+        <title>1984</title>
+        <author>Джордж Оруэлл</author>
+        <genre>Антиутопия</genre>
+        <year>1949</year>
+        <price currency="USD">15</price>
+        <available>true</available>
+    </book>
+
+    <book id="5">
+        <title>Гарри Поттер и философский камень</title>
+        <author>Дж. К. Роулинг</author>
+        <genre>Фэнтези</genre>
+        <year>1997</year>
+        <price currency="USD">20</price>
+        <available>true</available>
+    </book>
+
+    <book id="6">
+        <title>Алиса в Стране чудес</title>
+        <author>Льюис Кэрролл</author>
+        <genre>Сказка</genre>
+        <year>1865</year>
+        <price currency="EUR">12</price>
+        <available>false</available>
+    </book>
+</library>

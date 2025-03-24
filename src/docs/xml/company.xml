@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<company>
+    <employees>
+        <employee id="1">
+            <name>John Doe</name>
+            <position>Software Engineer</position>
+            <salary>75000</salary>
+        </employee>
+        <employee id="2">
+            <name>Jane Smith</name>
+            <position>Project Manager</position>
+            <salary>90000</salary>
+        </employee>
+        <employee id="3">
+            <name>Michael Johnson</name>
+            <position>Data Scientist</position>
+            <salary>85000</salary>
+        </employee>
+    </employees>
+    <departments>
+        <department id="101">
+            <name>Engineering</name>
+            <head>John Doe</head>
+        </department>
+        <department id="102">
+            <name>Product Management</name>
+            <head>Jane Smith</head>
+        </department>
+        <department id="103">
+            <name>Data Analytics</name>
+            <head>Michael Johnson</head>
+        </department>
+    </departments>
+    <projects>
+        <project id="P1">
+            <name>AI Research</name>
+            <budget>500000</budget>
+            <team>
+                <member>John Doe</member>
+                <member>Michael Johnson</member>
+            </team>
+        </project>
+        <project id="P2">
+            <name>Product Revamp</name>
+            <budget>300000</budget>
+            <team>
+                <member>Jane Smith</member>
+                <member>John Doe</member>
+            </team>
+        </project>
+    </projects>
+</company>
