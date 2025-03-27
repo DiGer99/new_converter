@@ -49,7 +49,6 @@ class Parser:
             if not doc.read().strip():
                 empty_file = True
 
-
         with open(res_doc_name, "w") as doc:
             if empty_file:
                 pass
@@ -109,11 +108,17 @@ class Parser:
 
                         # Вложенность токена (следующий закрытый токен) </book>
                         nesting_of_token = res.find(f"</{self._split_strip(token)}>", indx)
-
+                        # Если токен равен тому, который перечисляется сейчас - то просто открываем новый словарь, не записывая значение токена
                         if end_stack_for_array and self._split_strip(token) == end_stack_for_array[-1]:
                             stack.append(token)
-                            doc.write(f'{len(stack) * "\t"}{{\n')
-                            continue
+                            # Если только такие токены встречаются во вложенности и больше никакие другие - то будем просто их перечислять в списке без открытия словаря {
+                            if all(next_token in x for x in res[indx: nesting_of_token].split("</")):
+                                doc.write(f"{len(stack) * "\t"}")
+                                continue
+                            else:
+                                doc.write(f'{len(stack) * "\t"}{{\n')
+                                continue
+
                         # Если следующий токен отличается и он открывающий - открываем абзац
                         if self._split_strip(token) != self._split_strip(next_token):
                             doc.write(f'{len(stack) * '\t'}"{self._split_strip(token)}": {{\n')
@@ -143,7 +148,15 @@ class Parser:
                         
 
 p = Parser()
-p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
-p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
-p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")
-p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
+# p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
+# p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
+# p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")
+# p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
+
+
+# Конвертация в тестовые файлы
+# path = pathlib.Path(__file__).parent.parent.parent / "tests" / "correct_converted_docs"
+# p.convert_join(book, path / "test_book.json")
+# p.convert_join(order, path / "test_order.json")
+# p.convert_join(big_data_file, path / "test_big_data.json")
+# p.convert_join(company, path / "test_company.json")
