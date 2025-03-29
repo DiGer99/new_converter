@@ -1,5 +1,5 @@
 [tool.mypy]
-python_version = '3.12.8'
+python_version = '3.12'
 warn_return_any = true
 disallow_untyped_defs = true
 
