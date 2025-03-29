@@ -125,17 +125,15 @@ class Parser:
                                 continue
 
                         # Если следующий токен отличается и он открывающий - открываем абзац
-                        if self._split_strip(token) != self._split_strip(next_token):
+                        if next_closed_key and self._split_strip(token) != self._split_strip(next_token):
                             doc.write(f'{len(stack) * '\t'}"{self._split_strip(token)}": {{\n')
 
                         # Если следующий токен встречается несколько раз - открываем массив
-                        if (
+                        if next_closed_key and (
                             res.count(
                                 f"<{self._split_strip(next_token)}",
                                 indx,
-                                nesting_of_token,
-                            )
-                            > 1
+                                nesting_of_token) > 1
                         ):
                             if (
                                 end_stack_for_array
