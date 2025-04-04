@@ -1,22 +1,31 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Body
 from fastapi.responses import FileResponse, RedirectResponse
 import uvicorn
 from src.services.services import Parser
-
+from pydantic import BaseModel, Field
+from lxml import etree
 app = FastAPI()
 parser = Parser()
 
 
 @app.post("/files")
+def body_convert(body_xml: str = Body(media_type="text/plain")):
+    filename = "api_test_body.xml"
+    with open(f"src/docs/xml/{filename}", "w") as file:
+        file.write(body_xml)
+    return RedirectResponse(url=f"/files/doc/{filename}", status_code=303)
+
+
+@app.post("/files/doc")
 def convert(upload_file: UploadFile):
     filename = upload_file.filename
     file = upload_file.file
     with open(f"src/docs/xml/{filename}", "wb") as f:
         f.write(file.read())
-    return RedirectResponse(url=f"/files/{filename}", status_code=303)
+    return RedirectResponse(url=f"/files/doc/{filename}", status_code=303)
 
 
-@app.get("/files/{filename}")
+@app.get("/files/doc/{filename}")
 def get_file(filename: str):
     filename_json = filename.split(".xml")[0]
     parser.convert_join(f"src/docs/xml/{filename}", f"src/docs/json/{filename_json}.json")

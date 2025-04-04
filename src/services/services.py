@@ -23,7 +23,7 @@ class Parser:
 
     @staticmethod
     def _split_strip(token: str, split_: bool = True, chars: str = "<>/") -> str:
-        if split_:
+        if split_ and token:
             return token.split()[0].strip(chars)
         return token.strip(chars)
 
@@ -39,16 +39,17 @@ class Parser:
         stack: list[str] = []
         res: str = self.get_doc(doc_path)
         end_stack: str = ""
-        end_stack_for_array: list[str] = []
+        # Токены, которые открывают массив
+        stack_for_array: list[str] = []
+        end_stack_for_array: str = ""
         empty_file = False
+        tab = " " * 4
         with open(doc_path, "r") as doc:
             if not doc.read().strip():
                 empty_file = True
 
         with open(res_doc_name, "w") as doc:
-            if empty_file:
-                pass
-            else:
+            if not empty_file:
                 doc.write("{\n")
                 for indx, symbol in enumerate(res):
                     # закрывающий токен </
@@ -59,101 +60,88 @@ class Parser:
                         if res[indx - 1] not in ("<>/"):
                             while res[left_key] != ">":
                                 left_key -= 1
-                            doc.write(f'"{res[left_key + 1: right_key]}"')
+                            doc.write(f'"{res[left_key + 1: right_key].replace("\"", "\'")}"')
 
                         # Нынешний токен
-                        end_stack = stack.pop()
+                        end_stack = token = stack.pop()
 
                         # далее выполнится проверка следующего токена, если есть (проверка будет на то, что является ли следующий символ закрывающем токен /)
                         next_open_key = res.find("<", indx + 1)  # <
                         # граница следующего токена
-                        next_closed_key = res.find(">", next_open_key + 1)  # >
-                        next_token = res[
-                            next_open_key : next_closed_key + 1
-                        ]  # Следующий токен: <Item> или </Item>
-                        token = res[indx:next_open_key]
+                        next_close_key = res.find(">", next_open_key + 1)  # >
+                        # Следующий токен: <Item> или </Item>
+                        next_token = res[next_open_key : next_close_key + 1]
+
                         # закрывать массив после того как перчисления закончились
                         if (
-                            end_stack_for_array
-                            and self._split_strip(end_stack) == end_stack_for_array[-1]
+                            stack_for_array
+                            and self._split_strip(end_stack) == stack_for_array[-1]
                             and self._split_strip(next_token) != self._split_strip(end_stack)
                         ):
-                            doc.write(f"\n{len(stack) * '\t'}]")
-                            end_stack_for_array.pop()
+                            doc.write(f"\n{len(stack) * tab}]")
+                            end_stack_for_array = stack_for_array.pop()
 
                         # если следующий токен тоже закрывающий,то закрываем абзац
                         if "/" in next_token:
-                            doc.write(f'\n{len(stack) * "\t"}}}')
+                            doc.write(f"\n{len(stack) * tab}}}")
                         elif "/" not in next_token and stack:
 
                             doc.write(",\n")
 
                     # открывающий токен <
                     elif symbol == "<":
-                        now_key = res.find(">", indx)  # >
+                        now_close_key = res.find(">", indx)  # >
 
                         # Нынешний токен <book> or <book id="1">
-                        token = res[indx : now_key + 1]
+                        token = res[indx : now_close_key + 1]
                         line = (
-                            f'{len(stack) * "\t"}"{self._split_strip(token)}": '  # записываем токен
+                            f'{len(stack) * tab}"{self._split_strip(token)}": '  # записываем токен
                         )
-
                         # Следующий токен <title> или </title>
                         # >
-                        next_closed_key = (
-                            res.find(">", now_key + 1) if res[now_key + 1] == "<" else None
+                        next_close_key = (
+                            res.find(">", now_close_key + 1)
+                            if res[now_close_key + 1] == "<"
+                            else None
                         )
 
                         # Если после открывающего токена еще один, то будем записывать токен
-                        if next_closed_key:
-                            next_token = res[now_key + 1 : next_closed_key + 1]
+                        if next_close_key:
+                            next_token = res[now_close_key + 1 : next_close_key + 1]
 
                         # Вложенность токена (следующий закрытый токен) </book>
                         nesting_of_token = res.find(f"</{self._split_strip(token)}>", indx)
-                        # Если токен равен тому, который перечисляется сейчас - то просто открываем новый словарь, не записывая значение токена
-                        if (
-                            end_stack_for_array
-                            and self._split_strip(token) == end_stack_for_array[-1]
-                        ):
+                        # Если токен равен тому, который перечисляется сейчас
+                        if stack_for_array and self._split_strip(token) == stack_for_array[-1]:
                             stack.append(token)
                             # Если только такие токены встречаются во вложенности и больше никакие другие - то будем просто их перечислять в списке без открытия словаря {
                             if all(next_token in x for x in res[indx:nesting_of_token].split("</")):
-                                doc.write(f"{len(stack) * "\t"}")
+                                doc.write(f"{len(stack) * tab}")
                                 continue
                             else:
-                                doc.write(f'{len(stack) * "\t"}{{\n')
+                                doc.write(f"{len(stack) * tab}{{\n")
                                 continue
 
                         # Если следующий токен отличается и он открывающий - открываем абзац
-                        if next_closed_key and self._split_strip(token) != self._split_strip(next_token):
-                            doc.write(f'{len(stack) * '\t'}"{self._split_strip(token)}": {{\n')
+                        if (
+                            next_close_key
+                            and self._split_strip(token) != self._split_strip(next_token)
+                            and "/" not in next_token
+                        ):
+                            doc.write(f'{len(stack) * tab}"{self._split_strip(token)}": {{\n')
 
                         # Если следующий токен встречается несколько раз - открываем массив
-                        if next_closed_key and (
-                            res.count(
-                                f"<{self._split_strip(next_token)}",
-                                indx,
-                                nesting_of_token) > 1
+                        if next_close_key and (
+                            res.count(f"<{self._split_strip(next_token)}", indx, nesting_of_token)
+                            > 1
                         ):
-                            if (
-                                end_stack_for_array
-                                and self._split_strip(token) == end_stack_for_array[-1]
-                            ):
-                                pass
-                            else:
-                                end_stack_for_array.append(self._split_strip(next_token))
-                                doc.write(
-                                    f'{(len(stack) + 1) * '\t'}"{self._split_strip(next_token)}": [\n'
-                                )
-
-                        # Если токен равен предыдущему закрытому токену, только что удаленным из стека, просто открываем новый словарь без названия токена "{"
-                        # чтобы ключи были уникальными </Address> <Address Type="Billing">
-                        elif end_stack_for_array and self._split_strip(token) == self._split_strip(
-                            end_stack_for_array[-1]
-                        ):
-                            doc.write(f'{(len(stack) + 1) * "\t"}{{\n')
-
-                        elif res[now_key + 1] not in ("<>/"):
+                            stack_for_array.append(self._split_strip(next_token))
+                            doc.write(
+                                f'{(len(stack) + 1) * tab}"{self._split_strip(next_token)}": [\n'
+                            )
+                        # Если следующий символ в res не "<>/" (не токен, а значение,
+                        # без открытия абзацев - в одну строку), то записываем токен
+                        elif res[now_close_key + 1] not in ("<>/"):
                             doc.write(line)
 
                         stack.append(token)
@@ -165,11 +153,5 @@ p = Parser()
 # p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
 # p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")
 # p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
-
-
-# Конвертация в тестовые файлы
-# path = pathlib.Path(__file__).parent.parent.parent / "tests" / "correct_converted_docs"
-# p.convert_join(book, path / "test_book.json")
-# p.convert_join(order, path / "test_order.json")
-# p.convert_join(big_data_file, path / "test_big_data.json")
-# p.convert_join(company, path / "test_company.json")
+# p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
+p.convert_join(DOCS_DIR / "xml" / "level.xml", DOCS_DIR / "json" / "level_converted.json")

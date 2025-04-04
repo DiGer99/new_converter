@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog>
+  <book id="bk101">
+    <author>Гарри Гаррисон</author>
+    <title>Стальная крыса</title>
+    <genre>Фантастика</genre>
+    <price>12.99</price>
+    <publish_date>1961-09-01</publish_date>
+    <description>Приключения Джима Ди Гриза, известного как Стальная Крыса</description>
+  </book>
+  
+  <book id="bk102">
+    <author>Рэй Брэдбери</author>
+    <title>451° по Фаренгейту</title>
+    <genre>Антиутопия</genre>
+    <price>10.50</price>
+    <publish_date>1953-10-19</publish_date>
+    <description>Роман о будущем, где книги находятся под запретом</description>
+  </book>
+
+  <book id="bk103">
+    <author>Аркадий и Борис Стругацкие</author>
+    <title>Пикник на обочине</title>
+    <genre>Научная фантастика</genre>
+    <price>15.75</price>
+    <publish_date>1972-01-01</publish_date>
+    <description>История сталкера Рэдрика Шухарта в Зоне</description>
+  </book>
+
+  <book id="bk104">
+    <author>Джон Р. Р. Толкин</author>
+    <title>Властелин колец</title>
+    <genre>Фэнтези</genre>
+    <price>22.99</price>
+    <publish_date>1954-07-29</publish_date>
+    <description>Эпическая трилогия о Средиземье и Кольце Всевластья</description>
+  </book>
+
+  <book id="bk105">
+    <author>Айзек Азимов</author>
+    <title>Основание</title>
+    <genre>Научная фантастика</genre>
+    <price>14.25</price>
+    <publish_date>1951-05-01</publish_date>
+    <description>Падение Галактической Империи и план Хари Селдона</description>
+  </book>
+
+  <book id="bk106">
+    <author>Фрэнк Герберт</author>
+    <title>Дюна</title>
+    <genre>Научная фантастика</genre>
+    <price>18.99</price>
+    <publish_date>1965-08-01</publish_date>
+    <description>Эпическая сага о пустынной планете Арракис</description>
+  </book>
+
+  <book id="bk107">
+    <author>Урсула Ле Гуин</author>
+    <title>Волшебник Земноморья</title>
+    <genre>Фэнтези</genre>
+    <price>11.50</price>
+    <publish_date>1968-12-01</publish_date>
+    <description>История становления величайшего волшебника Гедда</description>
+  </book>
+
+  <book id="bk108">
+    <author>Сергей Лукьяненко</author>
+    <title>Ночной дозор</title>
+    <genre>Фэнтези</genre>
+    <price>13.25</price>
+    <publish_date>1998-01-01</publish_date>
+    <description>Противостояние Светлых и Тёмных в современной Москве</description>
+  </book>
+
+  <book id="bk109">
+    <author>Дэн Симмонс</author>
+    <title>Гиперион</title>
+    <genre>Научная фантастика</genre>
+    <price>16.75</price>
+    <publish_date>1989-05-26</publish_date>
+    <description>Истории паломников, идущих к загадочному Гипериону</description>
+  </book>
+
+  <book id="bk110">
+    <author>Виктор Пелевин</author>
+    <title>Generation "П"</title>
+    <genre>Современная проза</genre>
+    <price>12.99</price>
+    <publish_date>1999-01-01</publish_date>
+    <description>Роман о рекламе, наркотиках и поиске смысла в 90-е</description>
+  </book>
+
+  <book id="bk111">
+    <author>Станислав Лем</author>
+    <title>Солярис</title>
+    <genre>Научная фантастика</genre>
+    <price>11.25</price>
+    <publish_date>1961-01-01</publish_date>
+    <description>Контакт с разумным океаном планеты Солярис</description>
+  </book>
+
+  <book id="bk112">
+    <author>Дмитрий Глуховский</author>
+    <title>Метро 2033</title>
+    <genre>Постапокалипсис</genre>
+    <price>13.50</price>
+    <publish_date>2005-01-01</publish_date>
+    <description>Выживание человечества в московском метро после ядерной войны</description>
+  </book>
+</catalog>

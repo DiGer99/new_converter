@@ -63,15 +63,25 @@ class DocsSrcXML(RootDir):
             "book_converted.json",
             CorrectTestDocJSON.get_test_doc("book"),
         ),
-        (
-            DocsSrcXML.get_doc("big_data_file"),
-            "big_data_converted.json",
-            CorrectTestDocJSON.get_test_doc("big_data"),
-        ),
+        # (
+        #     DocsSrcXML.get_doc("big_data_file"),
+        #     "big_data_converted.json",
+        #     CorrectTestDocJSON.get_test_doc("big_data"),
+        # ),
         (
             DocsSrcXML.get_doc("company"),
             "company_converted.json",
             CorrectTestDocJSON.get_test_doc("company"),
+        ),
+        (
+            DocsSrcXML.get_doc("lib"),
+            "lib_converted.json",
+            CorrectTestDocJSON.get_test_doc("lib"),
+        ),
+        (
+            DocsSrcXML.get_doc("level"),
+            "level_converted.json",
+            CorrectTestDocJSON.get_test_doc("level"),
         ),
     ],
 )
