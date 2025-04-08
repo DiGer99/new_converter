@@ -5,36 +5,42 @@
             {
             "name": "John Doe",
             "position": "Software Engineer",
-            "salary": "75000"
+            "salary": "75000",
+            "__id": "1"
             },
             {
             "name": "Jane Smith",
             "position": "Project Manager",
-            "salary": "90000"
+            "salary": "90000",
+            "__id": "2"
             },
             {
             "name": "Michael Johnson",
             "position": "Data Scientist",
-            "salary": "85000"
+            "salary": "85000",
+            "__id": "3"
             }
         ]
-        },
+                },
     "departments": {
         "department": [
             {
             "name": "Engineering",
-            "head": "John Doe"
+            "head": "John Doe",
+            "__id": "101"
             },
             {
             "name": "Product Management",
-            "head": "Jane Smith"
+            "head": "Jane Smith",
+            "__id": "102"
             },
             {
             "name": "Data Analytics",
-            "head": "Michael Johnson"
+            "head": "Michael Johnson",
+            "__id": "103"
             }
         ]
-        },
+                },
     "projects": {
         "project": [
             {
@@ -44,9 +50,10 @@
                 "member": [
                     "John Doe",
                     "Michael Johnson"
-                ]
+                ],
+                "__id": "P1"
                 }
-            },
+                        },
             {
             "name": "Product Revamp",
             "budget": "300000",
@@ -54,10 +61,11 @@
                 "member": [
                     "Jane Smith",
                     "John Doe"
-                ]
+                ],
+                "__id": "P2"
                 }
-            }
+                        }
         ]
+                }
         }
-    }
 }

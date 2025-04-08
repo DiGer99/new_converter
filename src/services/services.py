@@ -1,7 +1,7 @@
-import pathlib
+from pathlib import Path
 
 
-DOCS_DIR = pathlib.Path(__file__).parent.parent / "docs"
+DOCS_DIR = Path(__file__).parent.parent / "docs"
 book = str(DOCS_DIR / "xml" / "book.xml")
 order = str(DOCS_DIR / "xml" / "order.xml")
 big_data_file = DOCS_DIR / "xml" / "big_data_file.xml"
@@ -9,7 +9,7 @@ company = DOCS_DIR / "xml" / "company.xml"
 
 
 class Parser:
-    def get_doc(self, doc_path: str) -> str:
+    def get_doc(self, doc_path: str | Path) -> str:
         """
         Возвращает файл xml в одну строку
         """
@@ -18,8 +18,8 @@ class Parser:
 
         for i, el in enumerate(res):
             res[i] = el.strip()
-        res = "".join(res)
-        return res
+
+        return "".join(res)
 
     @staticmethod
     def _split_strip(token: str, split_: bool = True, chars: str = "<>/") -> str:
@@ -35,7 +35,7 @@ class Parser:
         res = any(x in token.lower() for x in types)
         return res
 
-    def convert_join(self, doc_path: str, res_doc_name: str) -> None:
+    def convert_join(self, doc_path: str | Path, res_doc_name: str | Path) -> None:
         stack: list[str] = []
         res: str = self.get_doc(doc_path)
         end_stack: str = ""
@@ -44,6 +44,9 @@ class Parser:
         end_stack_for_array: str = ""
         empty_file = False
         tab = " " * 4
+        encapsulation_token: list[list[str]] = []
+        # Для понимания сейчас только перчислять значения без токенов 
+        only_values: bool = False
         with open(doc_path, "r") as doc:
             if not doc.read().strip():
                 empty_file = True
@@ -78,14 +81,28 @@ class Parser:
                             and self._split_strip(end_stack) == stack_for_array[-1]
                             and self._split_strip(next_token) != self._split_strip(end_stack)
                         ):
+                            
                             doc.write(f"\n{len(stack) * tab}]")
                             end_stack_for_array = stack_for_array.pop()
 
                         # если следующий токен тоже закрывающий,то закрываем абзац
                         if "/" in next_token:
-                            doc.write(f"\n{len(stack) * tab}}}")
+                            # Если нужно добавить токены с id и тд
+                            if encapsulation_token:
+                                doc.write(f",\n{len(stack) * tab}")
+                                list_params = encapsulation_token.pop()
+                                list_params = [i.split("=") for i in list_params]
+                                for indx, el in enumerate(list_params):
+                                    param, val = el
+                                    if indx == len(list_params) - 1:
+                                        doc.write(f'"__{param}": {val}\n')
+                                    else:
+                                        doc.write(f'"__{param}": {val},\n')
+                            # Если нет id
+                            else:
+                                doc.write(f"\n{len(stack) * tab}")
+                            doc.write(f"{len(stack) * tab}}}")
                         elif "/" not in next_token and stack:
-
                             doc.write(",\n")
 
                     # открывающий токен <
@@ -99,7 +116,7 @@ class Parser:
                         )
                         # Следующий токен <title> или </title>
                         # >
-                        next_close_key = (
+                        next_close_key: int | None = (
                             res.find(">", now_close_key + 1)
                             if res[now_close_key + 1] == "<"
                             else None
@@ -111,10 +128,15 @@ class Parser:
 
                         # Вложенность токена (следующий закрытый токен) </book>
                         nesting_of_token = res.find(f"</{self._split_strip(token)}>", indx)
+                        # Если пробелы в токене, будем закидывать в список параметры токена до знака ">"
+                        if " " in token:
+                            split_token = token[:-1].split()[1:]
+                            encapsulation_token.append(split_token)
                         # Если токен равен тому, который перечисляется сейчас
                         if stack_for_array and self._split_strip(token) == stack_for_array[-1]:
                             stack.append(token)
-                            # Если только такие токены встречаются во вложенности и больше никакие другие - то будем просто их перечислять в списке без открытия словаря {
+                            # Если только такие токены встречаются во вложенности и больше никакие другие - 
+                            # то будем просто их перечислять в списке без открытия словаря {
                             if all(next_token in x for x in res[indx:nesting_of_token].split("</")):
                                 doc.write(f"{len(stack) * tab}")
                                 continue
@@ -146,6 +168,7 @@ class Parser:
 
                         stack.append(token)
             doc.write("\n}")
+
 
 
 p = Parser()

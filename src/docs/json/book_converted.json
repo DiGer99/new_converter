@@ -7,7 +7,8 @@
         "genre": "Роман",
         "year": "1869",
         "price": "500",
-        "available": "true"
+        "available": "true",
+        "__currency": "RUB"
         },
         {
         "title": "Преступление и наказание",
@@ -15,7 +16,8 @@
         "genre": "Роман",
         "year": "1866",
         "price": "450",
-        "available": "false"
+        "available": "false",
+        "__currency": "RUB"
         },
         {
         "title": "Мастер и Маргарита",
@@ -23,7 +25,8 @@
         "genre": "Фантастика",
         "year": "1967",
         "price": "550",
-        "available": "true"
+        "available": "true",
+        "__currency": "RUB"
         },
         {
         "title": "1984",
@@ -31,7 +34,8 @@
         "genre": "Антиутопия",
         "year": "1949",
         "price": "15",
-        "available": "true"
+        "available": "true",
+        "__currency": "USD"
         },
         {
         "title": "Гарри Поттер и философский камень",
@@ -39,7 +43,8 @@
         "genre": "Фэнтези",
         "year": "1997",
         "price": "20",
-        "available": "true"
+        "available": "true",
+        "__currency": "USD"
         },
         {
         "title": "Алиса в Стране чудес",
@@ -47,8 +52,10 @@
         "genre": "Сказка",
         "year": "1865",
         "price": "12",
-        "available": "false"
+        "available": "false",
+        "__currency": "EUR"
         }
-    ]
+    ],
+    "__id": "6"
     }
 }
