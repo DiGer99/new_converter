@@ -2,8 +2,6 @@ from fastapi import FastAPI, UploadFile, Body
 from fastapi.responses import FileResponse, RedirectResponse
 import uvicorn
 from src.services.services import Parser
-from pydantic import BaseModel, Field
-from lxml import etree
 import uuid
 
 app = FastAPI()

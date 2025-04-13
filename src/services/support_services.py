@@ -9,7 +9,7 @@ def split_strip(token: str, split_: bool = True, chars: str = "<>/") -> str:
 
 def get_doc(doc_path: str | Path) -> str:
     """
-    Возвращает файл xml в одну строку
+        Возвращает файл xml в одну строку
     """
     with open(doc_path) as doc:
         res = doc.readlines()[1:]  # убираем версию xml

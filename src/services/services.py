@@ -1,22 +1,11 @@
 from pathlib import Path
-
 from tqdm import tqdm
 from src.services.support_services import get_doc, split_strip
 from src.services.params import ParserParams
 from typing import TextIO
 
 
-DOCS_DIR = Path(__file__).parent.parent / "docs"
-book = str(DOCS_DIR / "xml" / "book.xml")
-order = str(DOCS_DIR / "xml" / "order.xml")
-big_data_file = DOCS_DIR / "xml" / "big_data_file.xml"
-company = DOCS_DIR / "xml" / "company.xml"
-
-
 class Parser:
-    def __init__(self):
-        self.params = ParserParams()
-
     @staticmethod
     def open_token(res: str, doc: TextIO, indx: int, symbol: str, prm: ParserParams):
         """
@@ -48,7 +37,7 @@ class Parser:
 
         # Вложенность токена (следующий закрытый токен) </book>
         nesting_of_token = res.find(f"</{split_strip(token)}>", indx)
-        # Если пробелы в токене, будем закидывать в список параметры токена до знака ">"
+        # Если пробелы внутри токена, будем закидывать в список параметры токена до знака ">"
         if " " in token:
             split_token = token[:-1].split()[1:]
             prm.encapsulation_token.append(split_token)
@@ -99,7 +88,7 @@ class Parser:
         """
         left_key = indx - 1
         right_key = indx  # <
-        # ищем и записываем значение между токенами
+        # Ищем и записываем значение между токенами
         if res[indx - 1] not in "<>/":
             while res[left_key] != ">":
                 left_key -= 1
@@ -108,14 +97,14 @@ class Parser:
         # Нынешний токен
         prm.end_stack = token = prm.stack.pop()
 
-        # далее выполнится проверка следующего токена, если есть (проверка будет на то, что является ли следующий символ закрывающем токен /)
+        # Далее выполнится проверка следующего токена, если есть (проверка будет на то, является ли следующий символ закрывающем токен /)
         next_open_key = res.find("<", indx + 1)  # <
-        # граница следующего токена
+        # Граница следующего токена
         next_close_key = res.find(">", next_open_key + 1)  # >
         # Следующий токен: <Item> или </Item>
         next_token = res[next_open_key : next_close_key + 1]
 
-        # закрывать массив после того как перечисления закончились
+        # Закрывать массив после того как перечисления закончились
         if (
             prm.stack_for_array
             and split_strip(prm.end_stack) == prm.stack_for_array[-1]
@@ -123,24 +112,22 @@ class Parser:
         ):
             doc.write(f"\n{len(prm.stack) * prm.tab}]")
             end_stack_for_array = prm.stack_for_array.pop()
-
-        # если следующий токен тоже закрывающий, то закрываем абзац
+        # Если следующий токен тоже закрывающий, то закрываем абзац
         if "/" in next_token:
-            # Если нужно добавить токены с id и тд
+            # Если нужно добавить токены с id, PartNumber и тд.
             if prm.encapsulation_token:
-                doc.write(f",\n{len(prm.stack) * prm.tab}")
+                doc.write(f",\n")
                 end_of_list_params = prm.encapsulation_token.pop()
                 list_params = [i.split("=") for i in end_of_list_params]
                 for i, el in enumerate(list_params):
                     param, val = el
                     if i == len(list_params) - 1:
-                        doc.write(f'"__{param}": {val}\n')
+                        doc.write(f'{len(prm.stack) * prm.tab}"__{param}": {val}\n')
                         doc.write(f"{len(prm.stack) * prm.tab}}}")
                     else:
-                        doc.write(f'"__{param}": {val},\n')
-            # Если нет параметров в токене (id, ...)
+                        doc.write(f'{len(prm.stack) * prm.tab}"__{param}": {val},\n')
+            # Если нет параметров внутри токена (id, ...)
             else:
-                # doc.write(f"\n{len(prm.stack) * prm.tab}")
                 doc.write(f"\n{len(prm.stack) * prm.tab}}}")
         elif "/" not in next_token and prm.stack:
             doc.write(",\n")
@@ -166,10 +153,16 @@ class Parser:
             doc.write("\n}")
 
 
+DOCS_DIR = Path(__file__).parent.parent / "docs"
+book = str(DOCS_DIR / "xml" / "book.xml")
+order = str(DOCS_DIR / "xml" / "order.xml")
+big_data_file = DOCS_DIR / "xml" / "big_data_file.xml"
+company = DOCS_DIR / "xml" / "company.xml"
+
 p = Parser()
-p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
-p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
+# p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
+# p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
 p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
-p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
+# p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
 p.convert_join(DOCS_DIR / "xml" / "level.xml", DOCS_DIR / "json" / "level_converted.json")
 # p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")

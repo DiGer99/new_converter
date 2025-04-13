@@ -6,7 +6,9 @@
             "name": "John Doe",
             "position": "Software Engineer",
             "salary": "75000",
-            "__id": "1"
+            "__id": "1",
+            "__PartNumber": "75AA",
+            "__currency": "RUB"
             },
             {
             "name": "Jane Smith",
