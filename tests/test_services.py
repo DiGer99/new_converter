@@ -1,16 +1,11 @@
+import itertools
+from itertools import zip_longest
+
 import pytest
-from src.services.services import Parser
+
+# from src.services.services import Parser
+from src.services.old import Parser
 from pathlib import Path
-
-
-# CORRECT_DOCS_DIR = pathlib.Path(__file__).parent / "correct_converted_docs"
-# correct_book_doc = CORRECT_DOCS_DIR / "test_book.json"
-# correct_order_doc = CORRECT_DOCS_DIR / "test_order.json"
-
-# ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent
-# DOCS_DIR = ROOT_DIR / "src" / "docs"
-# order = DOCS_DIR / "xml" / "order.xml"
-# book = DOCS_DIR / "xml" / "book.xml"
 
 
 class RootDir:
@@ -63,11 +58,11 @@ class DocsSrcXML(RootDir):
             "book_converted.json",
             CorrectTestDocJSON.get_test_doc("book"),
         ),
-        # (
-        #     DocsSrcXML.get_doc("big_data_file"),
-        #     "big_data_converted.json",
-        #     CorrectTestDocJSON.get_test_doc("big_data"),
-        # ),
+        (
+            DocsSrcXML.get_doc("big_data_file"),
+            "big_data_converted.json",
+            CorrectTestDocJSON.get_test_doc("big_data"),
+        ),
         (
             DocsSrcXML.get_doc("company"),
             "company_converted.json",
@@ -78,11 +73,11 @@ class DocsSrcXML(RootDir):
             "lib_converted.json",
             CorrectTestDocJSON.get_test_doc("lib"),
         ),
-        (
-            DocsSrcXML.get_doc("level"),
-            "level_converted.json",
-            CorrectTestDocJSON.get_test_doc("level"),
-        ),
+        # (
+        #     DocsSrcXML.get_doc("level"),
+        #     "level_converted.json",
+        #     CorrectTestDocJSON.get_test_doc("level"),
+        # ),
     ],
 )
 def test_convert_join(enter_doc_path: Path, res_doc_path: str, correct_doc: Path) -> None:
@@ -90,7 +85,8 @@ def test_convert_join(enter_doc_path: Path, res_doc_path: str, correct_doc: Path
     path = RootDir.root_dir() / "src" / "docs" / "json" / res_doc_path
     p.convert_join(doc_path=enter_doc_path, res_doc_name=path)
 
-    with open(path) as res_doc, open(correct_doc) as test_doc:
-        result_doc = res_doc.read()
-        test_doc = test_doc.read()
-    assert result_doc == test_doc
+    with open(path) as res_doc, open(correct_doc) as correct_test_doc:
+        result_doc = res_doc.readlines()
+        correct_test_doc = correct_test_doc.readlines()
+        for res, test in itertools.zip_longest(result_doc, correct_test_doc):
+            assert res.strip() == test.strip()

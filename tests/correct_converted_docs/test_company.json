@@ -1,63 +1,71 @@
 {
 "company": {
-	"employees": {
-		"employee": [
-			{
-			"name": "John Doe",
-			"position": "Software Engineer",
-			"salary": "75000"
-			},
-			{
-			"name": "Jane Smith",
-			"position": "Project Manager",
-			"salary": "90000"
-			},
-			{
-			"name": "Michael Johnson",
-			"position": "Data Scientist",
-			"salary": "85000"
-			}
-		]
-		},
-	"departments": {
-		"department": [
-			{
-			"name": "Engineering",
-			"head": "John Doe"
-			},
-			{
-			"name": "Product Management",
-			"head": "Jane Smith"
-			},
-			{
-			"name": "Data Analytics",
-			"head": "Michael Johnson"
-			}
-		]
-		},
-	"projects": {
-		"project": [
-			{
-			"name": "AI Research",
-			"budget": "500000",
-			"team": {
-				"member": [
-					"John Doe",
-					"Michael Johnson"
-				]
-				}
-			},
-			{
-			"name": "Product Revamp",
-			"budget": "300000",
-			"team": {
-				"member": [
-					"Jane Smith",
-					"John Doe"
-				]
-				}
-			}
-		]
-		}
-	}
+    "employees": {
+        "employee": [
+            {
+            "name": "John Doe",
+            "position": "Software Engineer",
+            "salary": "75000",
+            "__id": "1"
+            },
+            {
+            "name": "Jane Smith",
+            "position": "Project Manager",
+            "salary": "90000",
+            "__id": "2"
+            },
+            {
+            "name": "Michael Johnson",
+            "position": "Data Scientist",
+            "salary": "85000",
+            "__id": "3"
+            }
+        ]
+        },
+    "departments": {
+        "department": [
+            {
+            "name": "Engineering",
+            "head": "John Doe",
+            "__id": "101"
+            },
+            {
+            "name": "Product Management",
+            "head": "Jane Smith",
+            "__id": "102"
+            },
+            {
+            "name": "Data Analytics",
+            "head": "Michael Johnson",
+            "__id": "103"
+            }
+        ]
+        },
+    "projects": {
+        "project": [
+            {
+            "name": "AI Research",
+            "budget": "500000",
+            "team": {
+                "member": [
+                    "John Doe",
+                    "Michael Johnson"
+                ],
+                "__id": "P1"
+                }
+            },
+            {
+            "name": "Product Revamp",
+            "budget": "300000",
+            "team": {
+                "member": [
+                    "Jane Smith",
+                    "John Doe"
+                ],
+                "__id": "P2"
+                }
+            }
+        ]
+        }
+    }
 }

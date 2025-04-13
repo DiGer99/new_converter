@@ -1,5 +1,10 @@
 from pathlib import Path
 
+from tqdm import tqdm
+from src.services.support_services import get_doc, split_strip
+from src.services.params import ParserParams
+from typing import TextIO
+
 
 DOCS_DIR = Path(__file__).parent.parent / "docs"
 book = str(DOCS_DIR / "xml" / "book.xml")
@@ -9,172 +14,162 @@ company = DOCS_DIR / "xml" / "company.xml"
 
 
 class Parser:
-    def get_doc(self, doc_path: str | Path) -> str:
-        """
-        Возвращает файл xml в одну строку
-        """
-        with open(doc_path) as doc:
-            res = doc.readlines()[1:]  # убираем версию xml
-
-        for i, el in enumerate(res):
-            res[i] = el.strip()
-
-        return "".join(res)
+    def __init__(self):
+        self.params = ParserParams()
 
     @staticmethod
-    def _split_strip(token: str, split_: bool = True, chars: str = "<>/") -> str:
-        if split_ and token:
-            return token.split()[0].strip(chars)
-        return token.strip(chars)
+    def open_token(res: str, doc: TextIO, indx: int, symbol: str, prm: ParserParams):
+        """
+        Parameters:
+            res: str - self.get_doc() функция, возвращающая файл xml в виде одной строки без пробелов между токенами
+            doc: TextIO - документ/файл, в который пишем результат
+            indx: int - текущий индекс в итерации по enumerate(res). Перебирает все индексы, символы из res
+            symbol: str - текущий символ в итерации
+            prm: ParserParams - все параметры для функционирования:
+            (
+                stack, end_stack, stack_for_array, end_stack_for_array, empty_file,
+                tab, encapsulation_token, only_values, next_token
+            )
+        """
+        now_close_key = res.find(">", indx)  # >
 
-    def _check_array(self, token: str) -> bool:
+        # Нынешний токен <book> or <book id="1">
+        token = res[indx : now_close_key + 1]
+        line = f'{len(prm.stack) * prm.tab}"{split_strip(token)}": '  # записываем токен
+        # Следующий токен <title> или </title>
+        # >
+        next_close_key: int | None = (
+            res.find(">", now_close_key + 1) if res[now_close_key + 1] == "<" else None
+        )
+
+        # Если после открывающего токена еще один, то будем записывать токен
+        if next_close_key:
+            prm.next_token = res[now_close_key + 1 : next_close_key + 1]
+
+        # Вложенность токена (следующий закрытый токен) </book>
+        nesting_of_token = res.find(f"</{split_strip(token)}>", indx)
+        # Если пробелы в токене, будем закидывать в список параметры токена до знака ">"
+        if " " in token:
+            split_token = token[:-1].split()[1:]
+            prm.encapsulation_token.append(split_token)
+        # Если токен равен тому, который перечисляется сейчас
+        if prm.stack_for_array and split_strip(token) == prm.stack_for_array[-1]:
+            prm.stack.append(token)
+            # Если только такие токены встречаются во вложенности и больше никакие другие -
+            # то будем просто их перечислять в списке без открытия словаря {
+            if all(prm.next_token in x for x in res[indx:nesting_of_token].split("</")):
+                doc.write(f"{len(prm.stack) * prm.tab}")
+            else:
+                doc.write(f"{len(prm.stack) * prm.tab}{{\n")
+            return
+        # Если следующий токен отличается и он открывающий - открываем абзац
+        if (
+            next_close_key
+            and split_strip(token) != split_strip(prm.next_token)
+            and "/" not in prm.next_token
+        ):
+            doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": {{\n')
+
+        # Если следующий токен встречается несколько раз - открываем массив
+        if next_close_key and (
+            res.count(f"<{split_strip(prm.next_token)}", indx, nesting_of_token) > 1
+        ):
+            prm.stack_for_array.append(split_strip(prm.next_token))
+            doc.write(f'{(len(prm.stack) + 1) * prm.tab}"{split_strip(prm.next_token)}": [\n')
+        # Если следующий символ в res не "<>/" (не токен, а значение,
+        # без открытия абзацев - в одну строку), то записываем токен
+        elif res[now_close_key + 1] not in "<>/":
+            doc.write(line)
+        prm.stack.append(token)
+        prm.next_token = ""
+
+    @staticmethod
+    def close_token(res: str, doc: TextIO, indx: int, symbol: str, prm: ParserParams) -> None:
         """
-        Проверка содержания списка types в токенах
+        Parameters:
+            res: str - self.get_doc() функция, возвращающая файл xml в виде одной строки без пробелов между токенами
+            doc: TextIO - документ/файл, в который пишем результат
+            indx: int - текущий индекс в итерации по enumerate(res). Перебирает все индексы, символы из res
+            symbol: str - текущий символ в итерации
+            prm: ParserParams - все параметры для функционирования:
+            (
+                stack, end_stack, stack_for_array, end_stack_for_array, empty_file,
+                tab, encapsulation_token, only_values, next_token
+            )
         """
-        types = ["type", "partnumber", "id"]
-        res = any(x in token.lower() for x in types)
-        return res
+        left_key = indx - 1
+        right_key = indx  # <
+        # ищем и записываем значение между токенами
+        if res[indx - 1] not in "<>/":
+            while res[left_key] != ">":
+                left_key -= 1
+            doc.write(f'"{res[left_key + 1: right_key].replace("\"", "\'")}"')
+
+        # Нынешний токен
+        prm.end_stack = token = prm.stack.pop()
+
+        # далее выполнится проверка следующего токена, если есть (проверка будет на то, что является ли следующий символ закрывающем токен /)
+        next_open_key = res.find("<", indx + 1)  # <
+        # граница следующего токена
+        next_close_key = res.find(">", next_open_key + 1)  # >
+        # Следующий токен: <Item> или </Item>
+        next_token = res[next_open_key : next_close_key + 1]
+
+        # закрывать массив после того как перечисления закончились
+        if (
+            prm.stack_for_array
+            and split_strip(prm.end_stack) == prm.stack_for_array[-1]
+            and split_strip(next_token) != split_strip(prm.end_stack)
+        ):
+            doc.write(f"\n{len(prm.stack) * prm.tab}]")
+            end_stack_for_array = prm.stack_for_array.pop()
+
+        # если следующий токен тоже закрывающий, то закрываем абзац
+        if "/" in next_token:
+            # Если нужно добавить токены с id и тд
+            if prm.encapsulation_token:
+                doc.write(f",\n{len(prm.stack) * prm.tab}")
+                end_of_list_params = prm.encapsulation_token.pop()
+                list_params = [i.split("=") for i in end_of_list_params]
+                for i, el in enumerate(list_params):
+                    param, val = el
+                    if i == len(list_params) - 1:
+                        doc.write(f'"__{param}": {val}\n')
+                        doc.write(f"{len(prm.stack) * prm.tab}}}")
+                    else:
+                        doc.write(f'"__{param}": {val},\n')
+            # Если нет параметров в токене (id, ...)
+            else:
+                # doc.write(f"\n{len(prm.stack) * prm.tab}")
+                doc.write(f"\n{len(prm.stack) * prm.tab}}}")
+        elif "/" not in next_token and prm.stack:
+            doc.write(",\n")
 
     def convert_join(self, doc_path: str | Path, res_doc_name: str | Path) -> None:
-        stack: list[str] = []
-        res: str = self.get_doc(doc_path)
-        end_stack: str = ""
-        # Токены, которые открывают массив
-        stack_for_array: list[str] = []
-        end_stack_for_array: str = ""
-        empty_file = False
-        tab = " " * 4
-        encapsulation_token: list[list[str]] = []
-        # Для понимания сейчас только перчислять значения без токенов 
-        only_values: bool = False
+        res: str = get_doc(doc_path)
+        prm = ParserParams()
         with open(doc_path, "r") as doc:
             if not doc.read().strip():
-                empty_file = True
+                prm.empty_file = True
 
         with open(res_doc_name, "w") as doc:
-            if not empty_file:
+            if not prm.empty_file:
                 doc.write("{\n")
-                for indx, symbol in enumerate(res):
+                for indx, symbol in tqdm(enumerate(res)):
                     # закрывающий токен </
                     if symbol == "<" and res[indx + 1] == "/":
-                        left_key = indx - 1
-                        right_key = indx  # <
-                        # ищем и записываем значение между токенами
-                        if res[indx - 1] not in ("<>/"):
-                            while res[left_key] != ">":
-                                left_key -= 1
-                            doc.write(f'"{res[left_key + 1: right_key].replace("\"", "\'")}"')
-
-                        # Нынешний токен
-                        end_stack = token = stack.pop()
-
-                        # далее выполнится проверка следующего токена, если есть (проверка будет на то, что является ли следующий символ закрывающем токен /)
-                        next_open_key = res.find("<", indx + 1)  # <
-                        # граница следующего токена
-                        next_close_key = res.find(">", next_open_key + 1)  # >
-                        # Следующий токен: <Item> или </Item>
-                        next_token = res[next_open_key : next_close_key + 1]
-
-                        # закрывать массив после того как перчисления закончились
-                        if (
-                            stack_for_array
-                            and self._split_strip(end_stack) == stack_for_array[-1]
-                            and self._split_strip(next_token) != self._split_strip(end_stack)
-                        ):
-                            
-                            doc.write(f"\n{len(stack) * tab}]")
-                            end_stack_for_array = stack_for_array.pop()
-
-                        # если следующий токен тоже закрывающий,то закрываем абзац
-                        if "/" in next_token:
-                            # Если нужно добавить токены с id и тд
-                            if encapsulation_token:
-                                doc.write(f",\n{len(stack) * tab}")
-                                list_params = encapsulation_token.pop()
-                                list_params = [i.split("=") for i in list_params]
-                                for indx, el in enumerate(list_params):
-                                    param, val = el
-                                    if indx == len(list_params) - 1:
-                                        doc.write(f'"__{param}": {val}\n')
-                                    else:
-                                        doc.write(f'"__{param}": {val},\n')
-                            # Если нет id
-                            else:
-                                doc.write(f"\n{len(stack) * tab}")
-                            doc.write(f"{len(stack) * tab}}}")
-                        elif "/" not in next_token and stack:
-                            doc.write(",\n")
+                        self.close_token(res, doc, indx, symbol, prm)
 
                     # открывающий токен <
                     elif symbol == "<":
-                        now_close_key = res.find(">", indx)  # >
-
-                        # Нынешний токен <book> or <book id="1">
-                        token = res[indx : now_close_key + 1]
-                        line = (
-                            f'{len(stack) * tab}"{self._split_strip(token)}": '  # записываем токен
-                        )
-                        # Следующий токен <title> или </title>
-                        # >
-                        next_close_key: int | None = (
-                            res.find(">", now_close_key + 1)
-                            if res[now_close_key + 1] == "<"
-                            else None
-                        )
-
-                        # Если после открывающего токена еще один, то будем записывать токен
-                        if next_close_key:
-                            next_token = res[now_close_key + 1 : next_close_key + 1]
-
-                        # Вложенность токена (следующий закрытый токен) </book>
-                        nesting_of_token = res.find(f"</{self._split_strip(token)}>", indx)
-                        # Если пробелы в токене, будем закидывать в список параметры токена до знака ">"
-                        if " " in token:
-                            split_token = token[:-1].split()[1:]
-                            encapsulation_token.append(split_token)
-                        # Если токен равен тому, который перечисляется сейчас
-                        if stack_for_array and self._split_strip(token) == stack_for_array[-1]:
-                            stack.append(token)
-                            # Если только такие токены встречаются во вложенности и больше никакие другие - 
-                            # то будем просто их перечислять в списке без открытия словаря {
-                            if all(next_token in x for x in res[indx:nesting_of_token].split("</")):
-                                doc.write(f"{len(stack) * tab}")
-                                continue
-                            else:
-                                doc.write(f"{len(stack) * tab}{{\n")
-                                continue
-
-                        # Если следующий токен отличается и он открывающий - открываем абзац
-                        if (
-                            next_close_key
-                            and self._split_strip(token) != self._split_strip(next_token)
-                            and "/" not in next_token
-                        ):
-                            doc.write(f'{len(stack) * tab}"{self._split_strip(token)}": {{\n')
-
-                        # Если следующий токен встречается несколько раз - открываем массив
-                        if next_close_key and (
-                            res.count(f"<{self._split_strip(next_token)}", indx, nesting_of_token)
-                            > 1
-                        ):
-                            stack_for_array.append(self._split_strip(next_token))
-                            doc.write(
-                                f'{(len(stack) + 1) * tab}"{self._split_strip(next_token)}": [\n'
-                            )
-                        # Если следующий символ в res не "<>/" (не токен, а значение,
-                        # без открытия абзацев - в одну строку), то записываем токен
-                        elif res[now_close_key + 1] not in ("<>/"):
-                            doc.write(line)
-
-                        stack.append(token)
+                        self.open_token(res, doc, indx, symbol, prm)
             doc.write("\n}")
 
 
-
 p = Parser()
-# p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
-# p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
-# p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")
-# p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
-# p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
+p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
+p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
+p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
+p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
 p.convert_join(DOCS_DIR / "xml" / "level.xml", DOCS_DIR / "json" / "level_converted.json")
+# p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")
