@@ -7,7 +7,7 @@ from typing import TextIO
 
 class Parser:
     @staticmethod
-    def open_token(res: str, doc: TextIO, indx: int, symbol: str, prm: ParserParams):
+    def open_token(res: str, doc: TextIO, indx: int, symbol: str, prm: ParserParams) -> None:
         """
         Parameters:
             res: str - self.get_doc() функция, возвращающая файл xml в виде одной строки без пробелов между токенами
@@ -39,36 +39,56 @@ class Parser:
         nesting_of_token = res.find(f"</{split_strip(token)}>", indx)
         # Если пробелы внутри токена, будем закидывать в список параметры токена до знака ">"
         if " " in token:
-            split_token = token[:-1].split()[1:]
-            prm.encapsulation_token.append(split_token)
+            token_with_spaces = token[:-1].split()[1:]
+            prm.encapsulation_token.append(token_with_spaces)
         # Если токен равен тому, который перечисляется сейчас
         if prm.stack_for_array and split_strip(token) == prm.stack_for_array[-1]:
             prm.stack.append(token)
             # Если только такие токены встречаются во вложенности и больше никакие другие -
             # то будем просто их перечислять в списке без открытия словаря {
-            if all(prm.next_token in x for x in res[indx:nesting_of_token].split("</")):
-                doc.write(f"{len(prm.stack) * prm.tab}")
-            else:
+            if (
+                prm.entry_array_only_values
+                and split_strip(token) == prm.entry_array_only_values[-1]
+            ):
+                doc.write(f" ")
+            elif prm.only_values and prm.only_values[-1] == split_strip(token):
                 doc.write(f"{len(prm.stack) * prm.tab}{{\n")
-            return
+            elif split_strip(token) not in prm.only_values:
+                if all(token in x for x in res[indx:nesting_of_token].split("</")):
+                    doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": [\n')
+                    prm.entry_array_only_values.append(split_strip(token))
+                else:
+                    doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": [\n')
+                    doc.write(f"{(len(prm.stack) + 1) * prm.tab}{{\n")
+                    prm.only_values.append(split_strip(token))
+
         # Если следующий токен отличается и он открывающий - открываем абзац
         if (
             next_close_key
             and split_strip(token) != split_strip(prm.next_token)
             and "/" not in prm.next_token
+            and split_strip(token) not in prm.only_values
         ):
             doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": {{\n')
 
         # Если следующий токен встречается несколько раз - открываем массив
-        if next_close_key and (
-            res.count(f"<{split_strip(prm.next_token)}", indx, nesting_of_token) > 1
+        if (
+            next_close_key
+            and (res.count(f"<{split_strip(prm.next_token)}", indx, nesting_of_token) > 1)
+            and split_strip(prm.next_token) not in prm.stack_for_array
         ):
             prm.stack_for_array.append(split_strip(prm.next_token))
-            doc.write(f'{(len(prm.stack) + 1) * prm.tab}"{split_strip(prm.next_token)}": [\n')
+
+            # doc.write(f'{(len(prm.stack) + 1) * prm.tab}"{split_strip(prm.next_token)}": [\n')
         # Если следующий символ в res не "<>/" (не токен, а значение,
         # без открытия абзацев - в одну строку), то записываем токен
         elif res[now_close_key + 1] not in "<>/":
-            doc.write(line)
+            if prm.entry_array_only_values and prm.entry_array_only_values[-1] == split_strip(
+                token
+            ):
+                doc.write(f"{(len(prm.stack) + len(prm.entry_array_only_values)) * prm.tab}")
+            else:
+                doc.write(line)
         prm.stack.append(token)
         prm.next_token = ""
 
@@ -97,7 +117,8 @@ class Parser:
         # Нынешний токен
         prm.end_stack = token = prm.stack.pop()
 
-        # Далее выполнится проверка следующего токена, если есть (проверка будет на то, является ли следующий символ закрывающем токен /)
+        # Далее выполнится проверка следующего токена, если есть (проверка будет на то, является ли следующий
+        # символ закрывающем токен /)
         next_open_key = res.find("<", indx + 1)  # <
         # Граница следующего токена
         next_close_key = res.find(">", next_open_key + 1)  # >
@@ -112,6 +133,8 @@ class Parser:
         ):
             doc.write(f"\n{len(prm.stack) * prm.tab}]")
             end_stack_for_array = prm.stack_for_array.pop()
+            if prm.only_values:
+                prm.only_values.pop()
         # Если следующий токен тоже закрывающий, то закрываем абзац
         if "/" in next_token:
             # Если нужно добавить токены с id, PartNumber и тд.
@@ -160,9 +183,9 @@ big_data_file = DOCS_DIR / "xml" / "big_data_file.xml"
 company = DOCS_DIR / "xml" / "company.xml"
 
 p = Parser()
-# p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
 # p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
 p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
+p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
 # p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
 p.convert_join(DOCS_DIR / "xml" / "level.xml", DOCS_DIR / "json" / "level_converted.json")
 # p.convert_join(big_data_file, DOCS_DIR / "json" / "big_data_converted.json")

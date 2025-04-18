@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <company>
     <employees>
-        <employee id="1" PartNumber="75AA" currency="RUB">
+        <employee id="1">
             <name>John Doe</name>
             <position>Software Engineer</position>
             <salary>75000</salary>
