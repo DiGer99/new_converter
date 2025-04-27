@@ -1,8 +1,8 @@
 import os
 import logging
 from typing import Callable, TYPE_CHECKING
-from rabit_exc import RabbitException
-from config import connection_params
+from .rabit_exc import RabbitException
+from .config_rabbit import connection_params
 
 import pika
 
@@ -24,7 +24,7 @@ class RabbitBase:
         return pika.BlockingConnection(parameters=self.connection_params)
 
     @property
-    def channel(self) -> BlockingChannel:
+    def channel(self) -> "BlockingChannel":
         if self._channel is None:
             raise RabbitException("Please use context manager for Rabbit helper.")
         return self._channel
@@ -58,10 +58,7 @@ class RabbitMixin:
     ):
         self.channel.basic_qos(prefetch_count=prefetch_count)
         self.declare_queue(queue_routing_key=queue_routing_key)
-        self.channel.basic_consume(
-            queue=queue_routing_key,
-            on_message_callback=message_callback
-        )
+        self.channel.basic_consume(queue=queue_routing_key, on_message_callback=message_callback)
         log.warning("Waiting for message...")
         self.channel.start_consuming()
 

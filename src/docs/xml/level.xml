@@ -20,7 +20,6 @@
             <level3 id="2.2.2">Value 8</level3>
         </level2>
     </level1>
-    <!-- More nested elements to reach 100 lines -->
     <level1 id="50">
         <level2 id="50.1">
             <level3 id="50.1.1">Value 99</level3>

@@ -1,8 +1,7 @@
 from pika.connection import ConnectionParameters
-import os
-
+from src.config.config import MQ_HOST, MQ_PORT
 
 connection_params = ConnectionParameters(
-    host=os.getenv("MQ_HOST"),
-    port=os.getenv("MQ_PORT")
+    host=MQ_HOST,
+    port=MQ_PORT
 )

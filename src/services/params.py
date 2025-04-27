@@ -9,7 +9,7 @@ class ParserParams:
         self.encapsulation_token: list[list[str]] = []
         self.only_values: list[str] = []
         self.next_token = ""
-        self.entry_array_only_values: list[str] = []
+        self.same_tokens: list[str] = []
 
     def reset(self) -> "ParserParams":
         return self.__init__()
