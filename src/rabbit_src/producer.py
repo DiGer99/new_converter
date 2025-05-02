@@ -53,4 +53,5 @@ class Publisher:
         log.info(f"Message was send: {self.corr_id}")
         while self.response is None:
             self.connection.process_data_events(time_limit=5)
+        log.info(f"Response: {self.response}")
         return self.response

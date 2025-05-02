@@ -1,4 +1,16 @@
 services:
+  minio:
+    image: minio/minio
+    command: server --console-address ":9001" /data
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment: #  Эта часть кода нам нужна, чтобы
+      MINIO_ROOT_USER: 'USERNAME'        #  запустить пользовательскую консоль
+      MINIO_ROOT_PASSWORD: 'PASSWORD'
+      MINIO_ADDRESS: ':9000'
+      MINIO_CONSOLE_ADDRESS: ':9001'
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
