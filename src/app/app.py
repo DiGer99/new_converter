@@ -6,7 +6,7 @@ from src.s3_storage.s3_service import s3_bucket_service_factory
 
 from src.config.config import logging_config
 from fastapi import FastAPI, UploadFile, Body
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response
 import uvicorn
 
 from src.rabbit_src.producer import Publisher

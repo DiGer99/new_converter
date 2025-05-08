@@ -1,55 +1,48 @@
 {
     "root": {
         "level1": [
-            {
+        {
             "level2": [
-                {
-                "level3": [
-                    "Value 1",
-                    "Value 2"
-                    ]
-                }
-
-                },--
-                {
-                "level3": [
-                    "Value 3",
-                    "Value 4"
-                    ]
-                }
-
-                }
-            ]
-            },--
             {
-            "level2": [
-                {
                 "level3": [
-                    "Value 5",
-                    "Value 6"
-                    ]
-                }
+                    "Value 1", "Value 2"
+                ]
 
-                },--
-                {
-                "level3": [
-                    "Value 7",
-                    "Value 8"
-                    ]
-                }
-
-                }
-            ]
-            },--
+            },
             {
-            "level2": {
                 "level3": [
-                    "Value 99",
-                    "Value 100"
-                    ]
-                }
+                    "Value 3", "Value 4"
+                ]
 
             }
+            ]
+
+        },
+        {
+            "level2": [
+            {
+                "level3": [
+                    "Value 5", "Value 6"
+                ]
+
+            },
+            {
+                "level3": [
+                    "Value 7", "Value 8"
+                ]
+
+            }
+            ]
+
+        },
+        {
+            "level2": {
+                "level3": [
+                    "Value 99", "Value 100"
+                ]
+            }
+        }
         ]
+
     }
 }

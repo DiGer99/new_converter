@@ -10,6 +10,7 @@ class ParserParams:
         self.only_values: list[str] = []
         self.next_token = ""
         self.same_tokens: list[str] = []
+        self.flag = False
 
     def reset(self) -> "ParserParams":
         return self.__init__()
