@@ -14,11 +14,11 @@ from src.rabbit_src.producer import Publisher
 log = logging.getLogger(__name__)
 logging_config()
 app = FastAPI()
-publisher = Publisher()
 
 
 @app.post("/files")
 def body_convert(body_xml: str = Body(media_type="text/plain")):
+    publisher = Publisher()
     response = publisher.call(body=body_xml)
     response_from_publisher = response.decode("utf-8")
 
@@ -36,6 +36,7 @@ def body_convert(body_xml: str = Body(media_type="text/plain")):
 
 @app.post("/files/doc")
 def convert(upload_file: UploadFile) -> Response:
+    publisher = Publisher()
     file = upload_file.file
     response = publisher.call(file.read())
     response_from_publisher = response.decode("utf-8")

@@ -4,6 +4,7 @@ import logging
 import uuid
 from src.rabbit_src.rabbit_base import SimpleRabbit
 from src.services.old import Parser as OldParser
+from src.services.services import Parser
 from pika.spec import Basic, BasicProperties
 from src.config.config import logging_config
 from src.s3_storage.s3_service import s3_bucket_service_factory
@@ -12,7 +13,8 @@ if TYPE_CHECKING:
     from pika.adapters.blocking_connection import BlockingChannel
 
 log = logging.getLogger(__name__)
-parser = OldParser()
+# parser = OldParser()
+parser = Parser()
 
 def message_callback_body(
     ch: "BlockingChannel", method: "Basic.Deliver", properties: "BasicProperties", body: bytes

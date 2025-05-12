@@ -49,9 +49,9 @@ class Parser:
             if all(
                     split_strip(prm.next_token) in x for x in res[indx:nesting_of_token].split("</")
             ):
-                prm.same_tokens.append(split_strip(prm.next_token))
+                prm.same_tokens.add(split_strip(prm.next_token))
             else:
-                prm.stack_for_array.append(split_strip(prm.next_token))
+                prm.stack_for_array.add(split_strip(prm.next_token))
 
         if "/" in prm.next_token:
             if split_strip(token) == split_strip(prm.next_token):
@@ -59,7 +59,7 @@ class Parser:
                     if split_strip(token) in prm.same_tokens:
                         doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": [\n')
                         doc.write(f'{(len(prm.stack) + 1) * prm.tab}')
-                        prm.only_values.append(split_strip(token))
+                        prm.only_values.add(split_strip(token))
                     else:
                         doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": ')
                 # elif split_strip(token) in prm.only_values:
@@ -75,7 +75,7 @@ class Parser:
                     elif split_strip(token) in prm.stack_for_array:
                         doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": [\n')
                         doc.write(f'{len(prm.stack) * prm.tab}{{\n')
-                        prm.only_values.append(split_strip(token))
+                        prm.only_values.add(split_strip(token))
 
                 elif split_strip(token) in prm.only_values:
                     if split_strip(token) in prm.stack_for_array:
@@ -190,22 +190,18 @@ class Parser:
     def convert_join(self, doc_path: str | Path, res_doc_name: str | Path) -> None:
         res: str = get_doc(doc_path)
         prm = ParserParams()
-        with open(doc_path, "r") as doc:
-            if not doc.read().strip():
-                prm.empty_file = True
 
         with open(res_doc_name, "w") as doc:
-            if not prm.empty_file:
-                doc.write("{\n")
-                for indx, symbol in tqdm(enumerate(res)):
-                    # закрывающий токен </
-                    if symbol == "<" and res[indx + 1] == "/":
-                        self.close_token(res, doc, indx, symbol, prm)
+            doc.write("{\n")
+            for indx, symbol in tqdm(enumerate(res)):
+                # закрывающий токен </
+                if symbol == "<" and res[indx + 1] == "/":
+                    self.close_token(res, doc, indx, symbol, prm)
 
-                    # открывающий токен <
-                    elif symbol == "<" and res[indx + 1] != "/":
-                        self.open_token(res, doc, indx, symbol, prm)
-                doc.write("}")
+                # открывающий токен <
+                elif symbol == "<" and res[indx + 1] != "/":
+                    self.open_token(res, doc, indx, symbol, prm)
+            doc.write("}")
 
 
 DOCS_DIR = Path(__file__).parent.parent / "docs"
@@ -214,10 +210,13 @@ order = str(DOCS_DIR / "xml" / "order.xml")
 big_data = DOCS_DIR / "xml" / "big_data.xml"
 company = DOCS_DIR / "xml" / "company.xml"
 
-p = Parser()
-p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
-p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
-p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
-p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
-p.convert_join(DOCS_DIR / "xml" / "level.xml", DOCS_DIR / "json" / "level_converted.json")
-# p.convert_join(big_data, DOCS_DIR / "json" / "big_data_converted.json")
+
+if __name__ == "__main__":
+    p = Parser()
+    p.convert_join(order, DOCS_DIR / "json" / "order_converted.json")
+    p.convert_join(company, DOCS_DIR / "json" / "company_converted.json")
+    p.convert_join(book, DOCS_DIR / "json" / "book_converted.json")
+    p.convert_join(DOCS_DIR / "xml" / "lib.xml", DOCS_DIR / "json" / "lib_converted.json")
+    p.convert_join(DOCS_DIR / "xml" / "level.xml", DOCS_DIR / "json" / "level_converted.json")
+    # p.convert_join(big_data, DOCS_DIR / "json" / "big_data_converted.json")
+
