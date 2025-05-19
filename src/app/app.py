@@ -9,11 +9,14 @@ from fastapi import FastAPI, UploadFile, Body
 from fastapi.responses import Response
 import uvicorn
 
+from src.auth.auth import router as auth_router
 from src.rabbit_src.producer import Publisher
 
 log = logging.getLogger(__name__)
 logging_config()
+
 app = FastAPI()
+app.include_router(auth_router)
 
 
 @app.post("/files")
