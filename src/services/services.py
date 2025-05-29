@@ -1,6 +1,6 @@
 from pathlib import Path
 from tqdm import tqdm
-from src.services.support_services import get_doc, split_strip
+from src.services.support_services import get_doc, split_strip, encapsulation
 from src.services.params import ParserParams
 from typing import TextIO
 
@@ -37,7 +37,7 @@ class Parser:
         nesting_of_token = res.find(f"</{split_strip(token)}>", indx)
         # Если пробелы внутри токена, будем закидывать в список параметры токена до знака ">"
         if " " in token:
-            token_with_spaces = token[:-1].split()[1:]
+            token_with_spaces = tuple(token[1:-1].split())
             prm.encapsulation_token.append(token_with_spaces)
 
         # Если следующий токен встречается несколько раз
@@ -62,9 +62,6 @@ class Parser:
                         prm.only_values.add(split_strip(token))
                     else:
                         doc.write(f'{len(prm.stack) * prm.tab}"{split_strip(token)}": ')
-                # elif split_strip(token) in prm.only_values:
-                #     if split_strip(token) in prm.same_tokens:
-                #         doc.write(f'{(len(prm.stack) + 1) * prm.tab}')
 
         elif "/" not in prm.next_token:
             if split_strip(token) != split_strip(prm.next_token):
@@ -130,6 +127,8 @@ class Parser:
             doc.write(f"\n{prm.tab}}}\n")
 
         elif "/" in next_token:
+            # encapsulation(prm, doc)
+
             if split_strip(prm.end_stack) != split_strip(next_token):
                 if split_strip(prm.end_stack) in prm.only_values:
                     if split_strip(prm.end_stack) in prm.same_tokens:
@@ -152,6 +151,8 @@ class Parser:
                     doc.write(f'{(len(prm.stack) + 1) * prm.tab}}}')
 
         elif "/" not in next_token:
+            # encapsulation(prm, doc)
+
             if split_strip(prm.end_stack) == split_strip(next_token):
                 if split_strip(prm.end_stack) in prm.only_values:
                     if split_strip(prm.end_stack) in prm.same_tokens:
@@ -163,28 +164,11 @@ class Parser:
                 if split_strip(prm.end_stack) in prm.only_values:
                     if split_strip(prm.end_stack) in prm.stack_for_array:
                         doc.write(f'\n{(len(prm.stack) + 1) * prm.tab}}}\n')
-                        doc.write(f'{len(prm.stack) * prm.tab}],\n')
+                        doc.write(f'{(len(prm.stack) + 1) * prm.tab}],\n')
                 elif split_strip(previous_token) != split_strip(prm.end_stack):
-                    doc.write(f'{len(prm.stack) * prm.tab}}},\n')
+                    doc.write(f'{(len(prm.stack) + 1) * prm.tab}}},\n')
                 else:
                     doc.write(f',\n')
-
-            # # Если нужно добавить токены с id, PartNumber и тд.
-            # if prm.encapsulation_token:
-            #     doc.write(f",\n")
-            #     print(prm.encapsulation_token)
-            #     end_of_list_params = prm.encapsulation_token.pop()
-            #     list_params = [i.split("=") for i in end_of_list_params]
-            #     for i, el in enumerate(list_params):
-            #         param, val = el
-            #         if i == len(list_params) - 1:
-            #             doc.write(f'{(len(prm.stack) + 1) * prm.tab}"__{param}": {val}\n')
-            #             # doc.write(f"{len(prm.stack) * prm.tab}}}")
-            #         else:
-            #             doc.write(f'{len(prm.stack) * prm.tab}"__{param}": {val},\n')
-            # # Если нет параметров внутри токена (id, ...)
-            # else:
-            #     doc.write(f"\n{len(prm.stack) * prm.tab}}}")
 
 
     def convert_join(self, doc_path: str | Path, res_doc_name: str | Path) -> None:
