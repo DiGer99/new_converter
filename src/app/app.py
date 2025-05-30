@@ -2,6 +2,8 @@ import logging
 import os
 import uuid
 
+from fastapi.params import Depends
+
 from src.s3_storage.s3_service import s3_bucket_service_factory
 
 from src.config.config import logging_config
@@ -10,7 +12,12 @@ from fastapi.responses import Response
 import uvicorn
 
 from src.auth.auth import router as auth_router
+from src.auth.validation import (
+    get_current_auth_user,
+)
 from src.rabbit_src.producer import Publisher
+from src.users.schemas import UserSchema
+
 
 log = logging.getLogger(__name__)
 logging_config()
@@ -38,7 +45,10 @@ def body_convert(body_xml: str = Body(media_type="text/plain")):
 
 
 @app.post("/files/doc")
-def convert(upload_file: UploadFile) -> Response:
+def convert(
+        upload_file: UploadFile,
+        user: UserSchema = Depends(get_current_auth_user)
+) -> Response:
     publisher = Publisher()
     file = upload_file.file
     response = publisher.call(file.read())

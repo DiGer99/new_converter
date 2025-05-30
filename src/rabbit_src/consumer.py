@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from pika.adapters.blocking_connection import BlockingChannel
 
 log = logging.getLogger(__name__)
-# parser = OldParser()
 parser = Parser()
 
 def message_callback_body(
