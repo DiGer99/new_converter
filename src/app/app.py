@@ -18,7 +18,6 @@ from src.auth.validation import (
 from src.rabbit_src.producer import Publisher
 from src.users.schemas import UserSchema
 
-
 log = logging.getLogger(__name__)
 logging_config()
 
@@ -66,4 +65,8 @@ def convert(
 
 
 def main() -> None:
-    uvicorn.run(app=app, reload=True)
+    uvicorn.run(app=app, host="0.0.0.0", port=8000)
+
+
+if __name__ == "__main__":
+    main()
