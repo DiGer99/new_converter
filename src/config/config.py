@@ -9,7 +9,6 @@ def logging_config(level = logging.INFO) -> None:
     )
 
 
-
 load_dotenv()
 
 MQ_EXCHANGE = getenv("MQ_EXCHANGE")

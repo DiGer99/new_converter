@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 parser = Parser()
 
+
 def message_callback_body(
     ch: "BlockingChannel", method: "Basic.Deliver", properties: "BasicProperties", body: bytes
 ):
@@ -46,7 +47,6 @@ def message_callback_body(
     ch.basic_ack(delivery_tag=method.delivery_tag)
     log.info(f"Message was convert: {properties.correlation_id}")
     os.remove(f"src/docs/xml/{filename}.xml")
-
 
 
 def main():
