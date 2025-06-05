@@ -1,6 +1,30 @@
 from pathlib import Path
+import os
+import uuid
+from src.s3_storage.s3_service import s3_bucket_service_factory
+from fastapi.responses import Response
 from typing_extensions import TextIO
 from src.services.params import ParserParams
+from src.rabbit_src.producer import Publisher
+
+
+
+def publish_response_get_from_s3(body: str) -> str:
+    publisher = Publisher()
+    response = publisher.call(body=body)
+    response_from_publisher = response.decode("utf-8")
+
+    client = s3_bucket_service_factory()
+    client.download_file_object(response_from_publisher, uuid_file := str(uuid.uuid4()))
+    with open(uuid_file) as res_file:
+        res_file = res_file.read()
+
+    os.remove(response_from_publisher)
+    os.remove(uuid_file)
+
+    return res_file
+
+
 
 
 def split_strip(token: str, split_: bool = True, chars: str = "<>/") -> str:
