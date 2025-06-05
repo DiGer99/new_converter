@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 import logging
 import uuid
 from src.rabbit_src.rabbit_base import SimpleRabbit
-from src.services.old import Parser as OldParser
 from src.services.services import Parser
 from pika.spec import Basic, BasicProperties
 from src.config.config import logging_config
@@ -17,8 +16,13 @@ parser = Parser()
 
 
 def message_callback_body(
-    ch: "BlockingChannel", method: "Basic.Deliver", properties: "BasicProperties", body: bytes
+    ch: "BlockingChannel",
+        method: "Basic.Deliver",
+        properties: "BasicProperties",
+        body: bytes
 ):
+    logging_config()
+    log.info(f"[x] Вошел в консьюмер")
     response = body.decode()
     filename = str(uuid.uuid4())[:16]
     with open(f"src/docs/xml/{filename}.xml", "w") as f:
@@ -31,11 +35,13 @@ def message_callback_body(
 
     with open(f"src/docs/json/{filename}.json") as fl:
         res_file = fl.read()
+    log.info("[x] Обработал файл")
 
     file_path_in_s3 = f"src/docs/json/{filename}.json"
 
     client = s3_bucket_service_factory()
     client.upload_file_object(prefix="", source_file_name=file_path_in_s3, content=res_file)
+    log.info("[x] Отправил в S3")
 
     ch.basic_publish(exchange=os.getenv("MQ_EXCHANGE"),
                      routing_key=properties.reply_to,
@@ -43,6 +49,7 @@ def message_callback_body(
                          correlation_id=properties.correlation_id
                      ),
                      body=file_path_in_s3)
+    log.info("[x] Отправил в паблишер результат")
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
     log.info(f"Message was convert: {properties.correlation_id}")
